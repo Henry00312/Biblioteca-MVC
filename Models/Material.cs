@@ -15,7 +15,7 @@ namespace Biblioteca_MVC.Models
         [Column("titulo")]
         public string Titulo { get; set; }
 
-        [Column("henry@HENRYfecharegistro")]
+        [Column("fecharegistro")]
         public DateTime FechaRegistro { get; set; }
 
         [Column("cantidadregistrada")]
