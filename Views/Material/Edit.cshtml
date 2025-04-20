@@ -1,49 +1,50 @@
 ﻿@model Biblioteca_MVC.Models.Material
 
 @{
-    ViewData["Title"] = "Edit";
+    ViewData["Title"] = "Editar Material";
 }
 
-<h1>Edit</h1>
+<div class="container mt-4">
+    <h2>Editar Material</h2>
+    <hr />
 
-<h4>Material</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Edit">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="Id" />
-            <div class="form-group">
-                <label asp-for="Titulo" class="control-label"></label>
-                <input asp-for="Titulo" class="form-control" />
-                <span asp-validation-for="Titulo" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="FechaRegistro" class="control-label"></label>
-                <input asp-for="FechaRegistro" class="form-control" />
-                <span asp-validation-for="FechaRegistro" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="CantidadRegistrada" class="control-label"></label>
-                <input asp-for="CantidadRegistrada" class="form-control" />
-                <span asp-validation-for="CantidadRegistrada" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="CantidadActual" class="control-label"></label>
-                <input asp-for="CantidadActual" class="form-control" />
-                <span asp-validation-for="CantidadActual" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
-            </div>
-        </form>
-    </div>
-</div>
+    <form asp-action="Edit">
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+        <input type="hidden" asp-for="Id" />
 
-<div>
-    <a asp-action="Index">Back to List</a>
+        <div class="form-group">
+            <label asp-for="Titulo" class="control-label">Título</label>
+            <input asp-for="Titulo" class="form-control" placeholder="Nombre del material" />
+            <span asp-validation-for="Titulo" class="text-danger"></span>
+        </div>
+
+        <div class="form-group mt-3">
+            <label asp-for="FechaRegistro" class="control-label">Fecha de Registro</label>
+            <input asp-for="FechaRegistro" class="form-control" type="date" />
+            <span asp-validation-for="FechaRegistro" class="text-danger"></span>
+        </div>
+
+        <div class="form-group mt-3">
+            <label asp-for="CantidadRegistrada" class="control-label">Cantidad Registrada</label>
+            <input asp-for="CantidadRegistrada" class="form-control" min="0" />
+            <span asp-validation-for="CantidadRegistrada" class="text-danger"></span>
+        </div>
+
+        <div class="form-group mt-3">
+            <label asp-for="CantidadActual" class="control-label">Cantidad Actual</label>
+            <input asp-for="CantidadActual" class="form-control" min="0" />
+            <span asp-validation-for="CantidadActual" class="text-danger"></span>
+        </div>
+
+        <div class="form-group mt-4">
+            <input type="submit" value="Guardar cambios" class="btn btn-primary" />
+            <a asp-action="Index" class="btn btn-secondary ms-2">Cancelar</a>
+        </div>
+    </form>
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

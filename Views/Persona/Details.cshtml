@@ -1,36 +1,26 @@
 ﻿@model Biblioteca_MVC.Models.Persona
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Detalles de la Persona";
 }
 
-<h1>Details</h1>
-
-<div>
-    <h4>Persona</h4>
+<div class="container mt-4">
+    <h2>Detalles de la Persona</h2>
     <hr />
+
     <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Nombre)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Nombre)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Cedula)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Cedula)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Rol)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Rol)
-        </dd>
+        <dt class="col-sm-4">Nombre</dt>
+        <dd class="col-sm-8">@Html.DisplayFor(model => model.Nombre)</dd>
+
+        <dt class="col-sm-4">Cédula</dt>
+        <dd class="col-sm-8">@Html.DisplayFor(model => model.Cedula)</dd>
+
+        <dt class="col-sm-4">Rol</dt>
+        <dd class="col-sm-8">@Html.DisplayFor(model => model.Rol)</dd>
     </dl>
-</div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+
+    <div class="mt-4">
+        <a asp-action="Edit" asp-route-id="@Model?.Id" class="btn btn-warning">Editar</a>
+        <a asp-action="Index" class="btn btn-secondary ms-2">Volver al listado</a>
+    </div>
 </div>

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
 
 namespace Biblioteca_MVC.Models
 {
@@ -18,19 +17,18 @@ namespace Biblioteca_MVC.Models
         [Column("fecha")]
         public DateTime Fecha { get; set; }
 
+        // FK hacia Material
         [Column("materialid")]
         public int MaterialId { get; set; }
-        [ForeignKey("MaterialId")]
 
-        [Column("material")]
+        [ForeignKey("MaterialId")]
         public Material Material { get; set; }
 
+        // FK hacia Persona
         [Column("personaid")]
         public int PersonaId { get; set; }
+
         [ForeignKey("PersonaId")]
-
-        [Column("persona")]
         public Persona Persona { get; set; }
-
     }
 }

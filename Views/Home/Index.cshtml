@@ -1,8 +1,23 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Inicio";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="container mt-5 text-center">
+    <h1 class="display-4 mb-4">Sistema de Gestión de Biblioteca</h1>
+    <p class="lead">Bienvenido al sistema. Desde aquí puedes acceder a las funciones principales:</p>
+
+    <div class="row justify-content-center mt-4">
+        <div class="col-md-3 mb-3">
+            <a class="btn btn-primary btn-lg w-100" asp-controller="Material" asp-action="Index">Materiales</a>
+        </div>
+        <div class="col-md-3 mb-3">
+            <a class="btn btn-success btn-lg w-100" asp-controller="Persona" asp-action="Index">Personas</a>
+        </div>
+        <div class="col-md-3 mb-3">
+            <a class="btn btn-warning btn-lg w-100" asp-controller="Prestamo" asp-action="Index">Préstamos</a>
+        </div>
+        <div class="col-md-3 mb-3">
+            <a class="btn btn-dark btn-lg w-100" asp-controller="Historial" asp-action="Index">Historial</a>
+        </div>
+    </div>
 </div>

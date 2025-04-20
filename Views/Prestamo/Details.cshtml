@@ -1,42 +1,28 @@
 ﻿@model Biblioteca_MVC.Models.Prestamo
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Detalle del Movimiento";
 }
 
-<h1>Details</h1>
-
-<div>
-    <h4>Prestamo</h4>
+<div class="container mt-4">
+    <h2>Detalle del Movimiento</h2>
     <hr />
+
     <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Tipo)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Tipo)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Fecha)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Fecha)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Material)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Material.Titulo)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Persona)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Persona.Cedula)
-        </dd>
+        <dt class="col-sm-4">Tipo de Movimiento</dt>
+        <dd class="col-sm-8">@Html.DisplayFor(model => model.Tipo)</dd>
+
+        <dt class="col-sm-4">Fecha</dt>
+        <dd class="col-sm-8">@Model.Fecha.ToString("yyyy-MM-dd HH:mm")</dd>
+
+        <dt class="col-sm-4">Material</dt>
+        <dd class="col-sm-8">@Html.DisplayFor(model => model.Material.Titulo)</dd>
+
+        <dt class="col-sm-4">Cédula de la Persona</dt>
+        <dd class="col-sm-8">@Html.DisplayFor(model => model.Persona.Cedula)</dd>
     </dl>
-</div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+
+    <div class="mt-4">
+        <a asp-action="Index" class="btn btn-secondary">Volver al listado</a>
+    </div>
 </div>

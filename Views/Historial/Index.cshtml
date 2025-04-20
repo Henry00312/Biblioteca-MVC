@@ -1,0 +1,31 @@
+﻿@model IEnumerable<Biblioteca_MVC.Models.Prestamo>
+
+@{
+    ViewData["Title"] = "Historial de Movimientos";
+}
+
+<h2>Historial de Movimientos</h2>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Tipo</th>
+            <th>Fecha</th>
+            <th>Material</th>
+            <th>Persona</th>
+            <th>Cédula</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Tipo</td>
+                <td>@item.Fecha.ToString("yyyy-MM-dd HH:mm")</td>
+                <td>@item.Material?.Titulo</td>
+                <td>@item.Persona?.Nombre</td>
+                <td>@item.Persona?.Cedula</td>
+            </tr>
+        }
+    </tbody>
+</table>

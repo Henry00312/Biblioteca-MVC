@@ -1,11 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Biblioteca_MVC.Models;
+using Biblioteca_MVC.Helpers;
 
 namespace Biblioteca_MVC.Controllers
 {
@@ -18,47 +18,36 @@ namespace Biblioteca_MVC.Controllers
             _context = context;
         }
 
-        // GET: Prestamo
         public async Task<IActionResult> Index()
         {
             var bibliotecaContext = _context.Prestamos.Include(p => p.Material).Include(p => p.Persona);
             return View(await bibliotecaContext.ToListAsync());
         }
 
-        // GET: Prestamo/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
-            {
                 return NotFound();
-            }
 
             var prestamo = await _context.Prestamos
                 .Include(p => p.Material)
                 .Include(p => p.Persona)
                 .FirstOrDefaultAsync(m => m.Id == id);
-            if (prestamo == null)
-            {
-                return NotFound();
-            }
 
-            return View(prestamo);
+            return prestamo == null ? NotFound() : View(prestamo);
         }
 
-        // GET: Prestamo/Create
         public IActionResult Create()
         {
             ViewData["MaterialId"] = new SelectList(_context.Materiales, "Id", "Titulo");
             ViewData["PersonaId"] = new SelectList(_context.Personas, "Id", "Cedula");
+
             return View();
         }
 
-        // POST: Prestamo/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Tipo,Fecha,MaterialId,PersonaId")] Prestamo prestamo)
+        public async Task<IActionResult> Create([Bind("MaterialId,PersonaId")] Prestamo prestamo)
         {
             if (ModelState.IsValid)
             {
@@ -72,10 +61,11 @@ namespace Biblioteca_MVC.Controllers
                 if (persona == null || material == null)
                 {
                     ModelState.AddModelError("", "Persona o material no válido.");
+                    ViewData["MaterialId"] = new SelectList(_context.Materiales, "Id", "Titulo", prestamo.MaterialId);
+                    ViewData["PersonaId"] = new SelectList(_context.Personas, "Id", "Cedula", prestamo.PersonaId);
                     return View(prestamo);
                 }
 
-                // Lógica de límite por rol
                 int limite = persona.Rol switch
                 {
                     "Estudiante" => 5,
@@ -85,64 +75,59 @@ namespace Biblioteca_MVC.Controllers
                 };
 
                 int prestamosActivos = await _context.Prestamos
-                    .CountAsync(p => p.PersonaId == persona.Id && p.Tipo == "Prestamo");
+                    .CountAsync(p => p.PersonaId == persona.Id && p.Tipo == TiposMovimiento.Prestamo);
 
                 if (prestamosActivos >= limite)
                 {
                     ModelState.AddModelError("", "La persona ya alcanzó el límite de materiales prestados según su rol.");
+                    ViewData["MaterialId"] = new SelectList(_context.Materiales, "Id", "Titulo", prestamo.MaterialId);
+                    ViewData["PersonaId"] = new SelectList(_context.Personas, "Id", "Cedula", prestamo.PersonaId);
                     return View(prestamo);
                 }
 
                 if (material.CantidadActual <= 0)
                 {
                     ModelState.AddModelError("", "No hay unidades disponibles de este material.");
+                    ViewData["MaterialId"] = new SelectList(_context.Materiales, "Id", "Titulo", prestamo.MaterialId);
+                    ViewData["PersonaId"] = new SelectList(_context.Personas, "Id", "Cedula", prestamo.PersonaId);
                     return View(prestamo);
                 }
 
-                // Registrar préstamo
                 prestamo.Fecha = DateTime.Now;
-                prestamo.Tipo = "Prestamo";
+                prestamo.Tipo = TiposMovimiento.Prestamo;
                 material.CantidadActual -= 1;
 
                 _context.Add(prestamo);
                 _context.Update(material);
                 await _context.SaveChangesAsync();
 
+                return RedirectToAction(nameof(Index));
             }
 
-            return RedirectToAction(nameof(Index));
-
-        }
-
-        // GET: Prestamo/Edit/5
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var prestamo = await _context.Prestamos.FindAsync(id);
-            if (prestamo == null)
-            {
-                return NotFound();
-            }
+            // Si ModelState es inválido por validaciones de data annotations
             ViewData["MaterialId"] = new SelectList(_context.Materiales, "Id", "Titulo", prestamo.MaterialId);
             ViewData["PersonaId"] = new SelectList(_context.Personas, "Id", "Cedula", prestamo.PersonaId);
             return View(prestamo);
         }
 
-        // POST: Prestamo/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+
+        public async Task<IActionResult> Edit(int? id)
+        {
+            if (id == null) return NotFound();
+
+            var prestamo = await _context.Prestamos.FindAsync(id);
+            if (prestamo == null) return NotFound();
+
+            ViewData["MaterialId"] = new SelectList(_context.Materiales, "Id", "Titulo", prestamo.MaterialId);
+            ViewData["PersonaId"] = new SelectList(_context.Personas, "Id", "Cedula", prestamo.PersonaId);
+            return View(prestamo);
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Tipo,Fecha,MaterialId,PersonaId")] Prestamo prestamo)
         {
-            if (id != prestamo.Id)
-            {
-                return NotFound();
-            }
+            if (id != prestamo.Id) return NotFound();
 
             if (ModelState.IsValid)
             {
@@ -153,56 +138,50 @@ namespace Biblioteca_MVC.Controllers
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!PrestamoExists(prestamo.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
+                    if (!PrestamoExists(prestamo.Id)) return NotFound();
+                    else throw;
                 }
                 return RedirectToAction(nameof(Index));
             }
+
             ViewData["MaterialId"] = new SelectList(_context.Materiales, "Id", "Titulo", prestamo.MaterialId);
             ViewData["PersonaId"] = new SelectList(_context.Personas, "Id", "Cedula", prestamo.PersonaId);
             return View(prestamo);
         }
 
-        // GET: Prestamo/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        // GET: Prestamo/Devolver/5
+        public async Task<IActionResult> Devolver(int? id)
         {
             if (id == null)
-            {
                 return NotFound();
-            }
 
             var prestamo = await _context.Prestamos
                 .Include(p => p.Material)
                 .Include(p => p.Persona)
-                .FirstOrDefaultAsync(m => m.Id == id);
+                .FirstOrDefaultAsync(p => p.Id == id && p.Tipo == TiposMovimiento.Prestamo);
+
             if (prestamo == null)
-            {
                 return NotFound();
-            }
 
-            return View(prestamo);
-        }
-
-        // POST: Prestamo/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            var prestamo = await _context.Prestamos.FindAsync(id);
-            if (prestamo != null)
+            // Crear nuevo registro tipo Devolución
+            var devolucion = new Prestamo
             {
-                _context.Prestamos.Remove(prestamo);
-            }
+                Tipo = TiposMovimiento.Devolucion,
+                Fecha = DateTime.Now,
+                MaterialId = prestamo.MaterialId,
+                PersonaId = prestamo.PersonaId
+            };
 
+            // Aumentar inventario
+            prestamo.Material.CantidadActual += 1;
+
+            _context.Prestamos.Add(devolucion);
+            _context.Materiales.Update(prestamo.Material);
             await _context.SaveChangesAsync();
+
             return RedirectToAction(nameof(Index));
         }
+
 
         private bool PrestamoExists(int id)
         {
