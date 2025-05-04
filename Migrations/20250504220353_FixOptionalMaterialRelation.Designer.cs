@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Biblioteca_MVC.Migrations
 {
     [DbContext(typeof(BibliotecaContext))]
-    [Migration("20250419204635_Inicial2")]
-    partial class Inicial2
+    [Migration("20250504220353_FixOptionalMaterialRelation")]
+    partial class FixOptionalMaterialRelation
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -34,6 +34,10 @@ namespace Biblioteca_MVC.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<bool>("Activo")
+                        .HasColumnType("bit")
+                        .HasColumnName("activo");
+
                     b.Property<int>("CantidadActual")
                         .HasColumnType("int")
                         .HasColumnName("cantidadactual");
@@ -44,7 +48,7 @@ namespace Biblioteca_MVC.Migrations
 
                     b.Property<DateTime>("FechaRegistro")
                         .HasColumnType("datetime2")
-                        .HasColumnName("henry@HENRYfecharegistro");
+                        .HasColumnName("fecharegistro");
 
                     b.Property<string>("Titulo")
                         .IsRequired()
@@ -64,6 +68,10 @@ namespace Biblioteca_MVC.Migrations
                         .HasColumnName("id");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("bit")
+                        .HasColumnName("activo");
 
                     b.Property<string>("Cedula")
                         .IsRequired()
@@ -102,7 +110,7 @@ namespace Biblioteca_MVC.Migrations
                         .HasColumnType("int")
                         .HasColumnName("materialid");
 
-                    b.Property<int>("PersonaId")
+                    b.Property<int?>("PersonaId")
                         .HasColumnType("int")
                         .HasColumnName("personaid");
 
@@ -123,20 +131,24 @@ namespace Biblioteca_MVC.Migrations
             modelBuilder.Entity("Biblioteca_MVC.Models.Prestamo", b =>
                 {
                     b.HasOne("Biblioteca_MVC.Models.Material", "Material")
-                        .WithMany()
+                        .WithMany("Prestamos")
                         .HasForeignKey("MaterialId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Biblioteca_MVC.Models.Persona", "Persona")
                         .WithMany("Prestamos")
                         .HasForeignKey("PersonaId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Material");
 
                     b.Navigation("Persona");
+                });
+
+            modelBuilder.Entity("Biblioteca_MVC.Models.Material", b =>
+                {
+                    b.Navigation("Prestamos");
                 });
 
             modelBuilder.Entity("Biblioteca_MVC.Models.Persona", b =>

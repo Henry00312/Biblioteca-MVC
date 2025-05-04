@@ -5,7 +5,7 @@
 namespace Biblioteca_MVC.Migrations
 {
     /// <inheritdoc />
-    public partial class Inicial2 : Migration
+    public partial class FixOptionalMaterialRelation : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

@@ -11,24 +11,30 @@ namespace Biblioteca_MVC.Models
         [Column("id")]
         public int Id { get; set; }
 
+        [Required]
         [Column("tipo")]
-        public string Tipo { get; set; } // Prestamo o Devolucion
+        public string Tipo { get; set; } = "Prestamo"; // Se asigna en el backend
 
+        [Required]
         [Column("fecha")]
-        public DateTime Fecha { get; set; }
+        public DateTime Fecha { get; set; } = DateTime.Now; // Se asigna en el backend
 
-        // FK hacia Material
+        // Fecha de devolución (vacía inicialmente)
+        [Column("fechadevolucion")]
+        public DateTime? FechaDevolucion { get; set; } // Nullable para que se mantenga en blanco
+
+        // Relación con Material
         [Column("materialid")]
         public int MaterialId { get; set; }
 
         [ForeignKey("MaterialId")]
-        public Material Material { get; set; }
+        public virtual Material? Material { get; set; } // opcional para evitar conflictos con filtros globales
 
-        // FK hacia Persona
+        // Relación con Persona (opcional)
         [Column("personaid")]
-        public int PersonaId { get; set; }
+        public int? PersonaId { get; set; }
 
         [ForeignKey("PersonaId")]
-        public Persona Persona { get; set; }
+        public virtual Persona? Persona { get; set; }
     }
 }

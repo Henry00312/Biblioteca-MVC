@@ -20,9 +20,15 @@ namespace Biblioteca_MVC.Controllers
 
         public async Task<IActionResult> Index()
         {
-            var bibliotecaContext = _context.Prestamos.Include(p => p.Material).Include(p => p.Persona);
-            return View(await bibliotecaContext.ToListAsync());
+            var prestamos = await _context.Prestamos
+                .Include(p => p.Material)
+                .Include(p => p.Persona)
+                .OrderByDescending(p => p.Fecha) // Ordenar por la fecha de manera descendente
+                .ToListAsync();
+
+            return View(prestamos);
         }
+
 
         public async Task<IActionResult> Details(int? id)
         {
@@ -36,12 +42,11 @@ namespace Biblioteca_MVC.Controllers
 
             return prestamo == null ? NotFound() : View(prestamo);
         }
-
+        // GET: Prestamo/Create
         public IActionResult Create()
         {
-            ViewData["MaterialId"] = new SelectList(_context.Materiales, "Id", "Titulo");
-            ViewData["PersonaId"] = new SelectList(_context.Personas, "Id", "Cedula");
-
+            ViewData["MaterialId"] = new SelectList(_context.Materiales.Where(m => m.Activo), "Id", "Titulo");
+            ViewData["PersonaId"] = new SelectList(_context.Personas.Where(p => p.Activo), "Id", "Cedula");
             return View();
         }
 
@@ -51,75 +56,78 @@ namespace Biblioteca_MVC.Controllers
         {
             if (ModelState.IsValid)
             {
-                var persona = await _context.Personas
-                    .Include(p => p.Prestamos)
-                    .FirstOrDefaultAsync(p => p.Id == prestamo.PersonaId);
+                var material = await _context.Materiales.FindAsync(prestamo.MaterialId);
+                var persona = await _context.Personas.FindAsync(prestamo.PersonaId);
 
-                var material = await _context.Materiales
-                    .FirstOrDefaultAsync(m => m.Id == prestamo.MaterialId);
-
-                if (persona == null || material == null)
+                if (material == null || !material.Activo)
                 {
-                    ModelState.AddModelError("", "Persona o material no válido.");
-                    ViewData["MaterialId"] = new SelectList(_context.Materiales, "Id", "Titulo", prestamo.MaterialId);
-                    ViewData["PersonaId"] = new SelectList(_context.Personas, "Id", "Cedula", prestamo.PersonaId);
-                    return View(prestamo);
+                    ModelState.AddModelError("MaterialId", "Material no válido o inactivo.");
                 }
 
-                int limite = persona.Rol switch
+                if (persona == null || !persona.Activo)
                 {
-                    "Estudiante" => 5,
-                    "Profesor" => 3,
-                    "Administrativo" => 1,
-                    _ => 0
-                };
-
-                int prestamosActivos = await _context.Prestamos
-                    .CountAsync(p => p.PersonaId == persona.Id && p.Tipo == TiposMovimiento.Prestamo);
-
-                if (prestamosActivos >= limite)
-                {
-                    ModelState.AddModelError("", "La persona ya alcanzó el límite de materiales prestados según su rol.");
-                    ViewData["MaterialId"] = new SelectList(_context.Materiales, "Id", "Titulo", prestamo.MaterialId);
-                    ViewData["PersonaId"] = new SelectList(_context.Personas, "Id", "Cedula", prestamo.PersonaId);
-                    return View(prestamo);
+                    ModelState.AddModelError("PersonaId", "Persona no válida o inactiva.");
                 }
 
-                if (material.CantidadActual <= 0)
+                // Verificar si la persona ha alcanzado el límite de préstamos activos según su rol
+                if (ModelState.IsValid)
                 {
-                    ModelState.AddModelError("", "No hay unidades disponibles de este material.");
-                    ViewData["MaterialId"] = new SelectList(_context.Materiales, "Id", "Titulo", prestamo.MaterialId);
-                    ViewData["PersonaId"] = new SelectList(_context.Personas, "Id", "Cedula", prestamo.PersonaId);
-                    return View(prestamo);
+                    var prestamosActivos = await _context.Prestamos
+                        .Where(p => p.PersonaId == prestamo.PersonaId && p.Tipo == "Prestamo")
+                        .CountAsync();
+
+                    int limite = persona.Rol.ToLower() switch
+                    {
+                        "estudiante" => 5, // Estudiantes tienen un límite de 5
+                        "profesor" => 3, // Profesores tienen un límite de 3
+                        "administrativo" => 1, // Administrativos tienen un límite de 1
+                        _ => 0
+                    };
+
+                    if (prestamosActivos >= limite)
+                    {
+                        ModelState.AddModelError("", $"El {persona.Rol} ha alcanzado su límite de préstamos ({limite}).");
+                    }
                 }
 
-                prestamo.Fecha = DateTime.Now;
-                prestamo.Tipo = TiposMovimiento.Prestamo;
-                material.CantidadActual -= 1;
+                // Validar si el material está disponible
+                if (material != null && material.CantidadActual <= 0)
+                {
+                    ModelState.AddModelError("", "Este material no está disponible para préstamo.");
+                }
 
-                _context.Add(prestamo);
-                _context.Update(material);
-                await _context.SaveChangesAsync();
+                // Si todo es válido, proceder con el préstamo
+                if (ModelState.IsValid)
+                {
+                    prestamo.Fecha = DateTime.Now;
+                    prestamo.Tipo = "Prestamo"; // Se asigna en el backend
 
-                return RedirectToAction(nameof(Index));
+                    _context.Add(prestamo);
+
+                    // Reducir la cantidad disponible del material
+                    material.CantidadActual -= 1;
+                    _context.Update(material);
+
+                    await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index)); // Redirige al listado de préstamos
+                }
             }
 
-            // Si ModelState es inválido por validaciones de data annotations
-            ViewData["MaterialId"] = new SelectList(_context.Materiales, "Id", "Titulo", prestamo.MaterialId);
-            ViewData["PersonaId"] = new SelectList(_context.Personas, "Id", "Cedula", prestamo.PersonaId);
+            ViewData["MaterialId"] = new SelectList(_context.Materiales.Where(m => m.Activo), "Id", "Titulo", prestamo.MaterialId);
+            ViewData["PersonaId"] = new SelectList(_context.Personas.Where(p => p.Activo), "Id", "Cedula", prestamo.PersonaId);
             return View(prestamo);
         }
 
-
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null) return NotFound();
+            if (id == null)
+                return NotFound();
 
             var prestamo = await _context.Prestamos.FindAsync(id);
-            if (prestamo == null) return NotFound();
+            if (prestamo == null)
+                return NotFound();
 
-            ViewData["MaterialId"] = new SelectList(_context.Materiales, "Id", "Titulo", prestamo.MaterialId);
-            ViewData["PersonaId"] = new SelectList(_context.Personas, "Id", "Cedula", prestamo.PersonaId);
+            LoadSelectLists(prestamo.MaterialId, prestamo.PersonaId);
             return View(prestamo);
         }
 
@@ -127,7 +135,8 @@ namespace Biblioteca_MVC.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Tipo,Fecha,MaterialId,PersonaId")] Prestamo prestamo)
         {
-            if (id != prestamo.Id) return NotFound();
+            if (id != prestamo.Id)
+                return NotFound();
 
             if (ModelState.IsValid)
             {
@@ -138,50 +147,50 @@ namespace Biblioteca_MVC.Controllers
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!PrestamoExists(prestamo.Id)) return NotFound();
-                    else throw;
+                    if (!PrestamoExists(prestamo.Id))
+                        return NotFound();
+                    else
+                        throw;
                 }
                 return RedirectToAction(nameof(Index));
             }
 
-            ViewData["MaterialId"] = new SelectList(_context.Materiales, "Id", "Titulo", prestamo.MaterialId);
-            ViewData["PersonaId"] = new SelectList(_context.Personas, "Id", "Cedula", prestamo.PersonaId);
+            LoadSelectLists(prestamo.MaterialId, prestamo.PersonaId);
             return View(prestamo);
         }
 
-        // GET: Prestamo/Devolver/5
-        public async Task<IActionResult> Devolver(int? id)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Devolver(int id)
         {
-            if (id == null)
-                return NotFound();
-
             var prestamo = await _context.Prestamos
                 .Include(p => p.Material)
                 .Include(p => p.Persona)
-                .FirstOrDefaultAsync(p => p.Id == id && p.Tipo == TiposMovimiento.Prestamo);
+                .FirstOrDefaultAsync(p => p.Id == id && p.Tipo == "Prestamo");
 
             if (prestamo == null)
                 return NotFound();
 
-            // Crear nuevo registro tipo Devolución
-            var devolucion = new Prestamo
+            prestamo.Tipo = "Devolucion";
+            prestamo.FechaDevolucion = DateTime.Now; // Asignamos la fecha de devolución
+
+            if (prestamo.Material != null)
             {
-                Tipo = TiposMovimiento.Devolucion,
-                Fecha = DateTime.Now,
-                MaterialId = prestamo.MaterialId,
-                PersonaId = prestamo.PersonaId
-            };
+                prestamo.Material.CantidadActual += 1; // Aumentamos la cantidad del material
+                _context.Update(prestamo.Material);
+            }
 
-            // Aumentar inventario
-            prestamo.Material.CantidadActual += 1;
-
-            _context.Prestamos.Add(devolucion);
-            _context.Materiales.Update(prestamo.Material);
+            _context.Update(prestamo); // Actualizamos el préstamo
             await _context.SaveChangesAsync();
 
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(Index)); // Redirigimos al listado de préstamos
         }
 
+        private void LoadSelectLists(int? selectedMaterialId = null, int? selectedPersonaId = null)
+        {
+            ViewData["MaterialId"] = new SelectList(_context.Materiales.Where(m => m.Activo), "Id", "Titulo", selectedMaterialId);
+            ViewData["PersonaId"] = new SelectList(_context.Personas.Where(p => p.Activo), "Id", "Cedula", selectedPersonaId);
+        }
 
         private bool PrestamoExists(int id)
         {

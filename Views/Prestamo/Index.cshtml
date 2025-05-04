@@ -1,11 +1,11 @@
 ﻿@model IEnumerable<Biblioteca_MVC.Models.Prestamo>
 
 @{
-    ViewData["Title"] = "Listado de Movimientos";
+    ViewData["Title"] = "Préstamos y Devoluciones";
 }
 
 <div class="container mt-4">
-    <h2>Historial de Préstamos y Devoluciones</h2>
+    <h2>@ViewData["Title"]</h2>
 
     <div class="mb-3">
         <a asp-action="Create" class="btn btn-primary">Registrar nuevo préstamo</a>
@@ -14,32 +14,57 @@
     <table class="table table-striped table-bordered">
         <thead class="table-dark">
             <tr>
-                <th>Tipo</th>
-                <th>Fecha</th>
+                <th>Fecha de Préstamo</th>
                 <th>Material</th>
-                <th>Persona (Cédula)</th>
+                <th>Persona</th>
+                <th>Fecha de Devolución</th> <!-- Mostrar la fecha de devolución -->
                 <th>Acciones</th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var item in Model)
+            @if (Model.Any())
             {
-                <tr>
-                    <td>@item.Tipo</td>
-                    <td>@item.Fecha.ToString("yyyy-MM-dd HH:mm")</td>
-                    <td>@item.Material?.Titulo</td>
-                    <td>@item.Persona?.Cedula</td>
-                    <td>
-                        @if (item.Tipo == "Prestamo")
-                        {
-                            <a asp-action="Devolver" asp-route-id="@item.Id" class="btn btn-sm btn-success">Devolver</a>
-                        }
-
-                        <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info ms-1">Ver</a>
-
-                        <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger ms-1">Eliminar</a>
-                    </td>
-                </tr>
+                foreach (var item in Model)
+                {
+                            <tr>
+                                <td>@item.Fecha.ToString("yyyy-MM-dd HH:mm")</td>
+                                <td>@item.Material?.Titulo</td>
+                                <td>
+                            @(item.Persona != null
+                                    ? $"{item.Persona.Cedula} - {item.Persona.Nombre}"
+                                    : "Persona eliminada")
+                                </td>
+                                <td>
+                            @if (item.FechaDevolucion.HasValue)
+                            {
+                                @item.FechaDevolucion?.ToString("yyyy-MM-dd HH:mm")
+                            }
+                            else
+                            {
+                                            <span class="text-muted">Pendiente</span> <!-- Si aún no ha sido devuelto -->
+                            }
+                                </td>
+                                <td>
+                            @if (item.Tipo == "Prestamo")
+                            {
+                                            <form asp-action="Devolver" method="post" style="display:inline">
+                                                <input type="hidden" name="id" value="@item.Id" />
+                                                <button type="submit" class="btn btn-warning btn-sm">Devolver</button>
+                                            </form>
+                            }
+                            else
+                            {
+                                            <span class="text-muted">Devolución completada</span>
+                            }
+                                </td>
+                            </tr>
+                }
+            }
+            else
+            {
+                    <tr>
+                        <td colspan="5" class="text-center">No hay préstamos o devoluciones registradas.</td>
+                    </tr>
             }
         </tbody>
     </table>

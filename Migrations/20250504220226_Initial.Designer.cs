@@ -4,6 +4,7 @@ using Biblioteca_MVC.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Biblioteca_MVC.Migrations
 {
     [DbContext(typeof(BibliotecaContext))]
-    partial class BibliotecaContextModelSnapshot : ModelSnapshot
+    [Migration("20250504220226_Initial")]
+    partial class Initial
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -102,10 +105,6 @@ namespace Biblioteca_MVC.Migrations
                     b.Property<DateTime>("Fecha")
                         .HasColumnType("datetime2")
                         .HasColumnName("fecha");
-
-                    b.Property<DateTime?>("FechaDevolucion")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("fechadevolucion");
 
                     b.Property<int>("MaterialId")
                         .HasColumnType("int")

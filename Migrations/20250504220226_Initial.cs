@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Biblioteca_MVC.Migrations
 {
     /// <inheritdoc />
-    public partial class Inicial : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -18,9 +18,10 @@ namespace Biblioteca_MVC.Migrations
                     id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     titulo = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    henryHENRYfecharegistro = table.Column<DateTime>(name: "henry@HENRYfecharegistro", type: "datetime2", nullable: false),
+                    fecharegistro = table.Column<DateTime>(type: "datetime2", nullable: false),
                     cantidadregistrada = table.Column<int>(type: "int", nullable: false),
-                    cantidadactual = table.Column<int>(type: "int", nullable: false)
+                    cantidadactual = table.Column<int>(type: "int", nullable: false),
+                    activo = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -35,7 +36,8 @@ namespace Biblioteca_MVC.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     nombre = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     cedula = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    rol = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    rol = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    activo = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -51,7 +53,7 @@ namespace Biblioteca_MVC.Migrations
                     tipo = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     fecha = table.Column<DateTime>(type: "datetime2", nullable: false),
                     materialid = table.Column<int>(type: "int", nullable: false),
-                    personaid = table.Column<int>(type: "int", nullable: false)
+                    personaid = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -61,13 +63,13 @@ namespace Biblioteca_MVC.Migrations
                         column: x => x.materialid,
                         principalTable: "Material",
                         principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Prestamo_Persona_personaid",
                         column: x => x.personaid,
                         principalTable: "Persona",
                         principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.SetNull);
                 });
 
             migrationBuilder.CreateIndex(
