@@ -1,0 +1,29 @@
+﻿@using Biblioteca.Domain.Entities
+@model Persona
+
+@{
+    ViewData["Title"] = "Eliminar Persona";
+}
+
+<div class="container mt-4">
+    <h2 class="text-danger">¿Estás seguro que deseas eliminar esta persona?</h2>
+    <p class="text-muted">Solo podrás eliminar personas que no tengan préstamos activos.</p>
+    <hr />
+
+    <dl class="row">
+        <dt class="col-sm-4">Nombre</dt>
+        <dd class="col-sm-8">@Html.DisplayFor(model => model.Nombre)</dd>
+
+        <dt class="col-sm-4">Cédula</dt>
+        <dd class="col-sm-8">@Html.DisplayFor(model => model.Cedula)</dd>
+
+        <dt class="col-sm-4">Rol</dt>
+        <dd class="col-sm-8">@Html.DisplayFor(model => model.Rol)</dd>
+    </dl>
+
+    <form asp-action="Delete">
+        <input type="hidden" asp-for="Id" />
+        <button type="submit" class="btn btn-danger">Eliminar</button>
+        <a asp-action="Index" class="btn btn-secondary ms-2">Cancelar</a>
+    </form>
+</div>

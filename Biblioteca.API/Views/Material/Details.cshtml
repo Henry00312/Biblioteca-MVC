@@ -1,0 +1,30 @@
+﻿@using Biblioteca.Domain.Entities
+@model Material
+
+@{
+    ViewData["Title"] = "Detalles del Material";
+}
+
+<div class="container mt-4">
+    <h2>Detalles del Material</h2>
+    <hr />
+
+    <dl class="row">
+        <dt class="col-sm-4">Título</dt>
+        <dd class="col-sm-8">@Html.DisplayFor(model => model.Titulo)</dd>
+
+        <dt class="col-sm-4">Fecha de Registro</dt>
+        <dd class="col-sm-8">@Html.DisplayFor(model => model.FechaRegistro)</dd>
+
+        <dt class="col-sm-4">Cantidad Registrada</dt>
+        <dd class="col-sm-8">@Html.DisplayFor(model => model.CantidadRegistrada)</dd>
+
+        <dt class="col-sm-4">Cantidad Actual</dt>
+        <dd class="col-sm-8">@Html.DisplayFor(model => model.CantidadActual)</dd>
+    </dl>
+
+    <div class="mt-4">
+        <a asp-action="Edit" asp-route-id="@Model?.Id" class="btn btn-warning">Editar</a>
+        <a asp-action="Index" class="btn btn-secondary ms-2">Volver al listado</a>
+    </div>
+</div>

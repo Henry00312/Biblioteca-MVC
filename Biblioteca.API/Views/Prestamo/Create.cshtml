@@ -1,0 +1,32 @@
+﻿@using Biblioteca.Domain.Entities
+@model Prestamo
+
+@{
+    ViewData["Title"] = "Nuevo Préstamo";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<form asp-action="Create" method="post">
+    <div asp-validation-summary="All" class="text-danger"></div>
+
+    <div class="form-group">
+        <label for="MaterialId">Material</label>
+        <select asp-for="MaterialId" class="form-control" asp-items="ViewBag.Materiales"></select>
+        <span asp-validation-for="MaterialId" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label for="PersonaId">Persona</label>
+        <select asp-for="PersonaId" class="form-control" asp-items="ViewBag.Personas"></select>
+        <span asp-validation-for="PersonaId" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary mt-3">Guardar</button>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
